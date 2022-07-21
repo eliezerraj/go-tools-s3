@@ -4,7 +4,10 @@ import(
 	"fmt"
 	"flag"
 	"os"
+	"io"
 	"bytes"
+	"crypto/md5"
+	"encoding/hex"
 
 	"github.com/spf13/viper"
 	"github.com/aws/aws-sdk-go/aws"
@@ -69,6 +72,14 @@ func main(){
     buffer := make([]byte, size)
     file.Read(buffer)
 
+	hash := md5.New()
+	_, err = io.Copy(hash, file)
+	if err != nil {
+		panic(err)
+	}
+
+	var s3_tag = "md5=" + hex.EncodeToString(hash.Sum(nil))
+	
 	_, err = s3.New(sess).PutObject(&s3.PutObjectInput{
         Bucket:               aws.String(*bucket_name),
         Key:                  aws.String(*file_name),
@@ -76,6 +87,7 @@ func main(){
         Body:                 bytes.NewReader(buffer),
         ContentLength:        aws.Int64(size),
         ContentDisposition:   aws.String("attachment"),
+		Tagging:			  aws.String(s3_tag),
         ServerSideEncryption: aws.String("AES256"),
     })
 	
