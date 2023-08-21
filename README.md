@@ -2,4 +2,9 @@
 
 How to use
 
-go run . --bucket_name datalake-398937914037-eliezerraj/raw_data/enem/2020/ --file_name README.md
+export AWS_REGION=
+export AWS_ACCESS_KEY_ID=
+export AWS_SECRET_ACCESS_KEY=
+export AWS_SESSION_TOKEN=
+
+go run . --bucket_name 908671954593-eliezer-my-bucket-test --file_name file01.txt

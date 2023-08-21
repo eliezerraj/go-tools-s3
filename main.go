@@ -11,8 +11,8 @@ import(
 
 	"github.com/spf13/viper"
 	"github.com/aws/aws-sdk-go/aws"
-    "github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	//"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
@@ -22,6 +22,7 @@ var aws_acess_token = ""
 
 func getEnvVar(key string) string {
 	fmt.Printf("Loading enviroment variable %s .. \n", key)
+	
 	viper.SetConfigFile("config.yaml")
 	viper.AddConfigPath(".")
 
@@ -47,30 +48,30 @@ func main(){
 	flag.Parse()
 	fmt.Printf("bucket_name: %s file_name: %s  \n", *bucket_name, *file_name)
 
-	aws_region 		:= getEnvVar("AWS_REGION")
-	aws_access_id 	:= getEnvVar("AWS_ACCESS_ID")
-	aws_access_secret := getEnvVar("AWS_ACCESS_SECRET")
+	aws_region 			:= os.Getenv("AWS_REGION") //getEnvVar("AWS_REGION")
+	//aws_access_id 		:= os.Getenv("AWS_ACCESS_KEY_ID") //getEnvVar("AWS_ACCESS_KEY_ID")
+	//aws_access_secret 	:= os.Getenv("AWS_SECRET_ACCESS_KEY") //getEnvVar("AWS_SECRET_ACCESS_KEY")
 
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(aws_region),
-		Credentials: credentials.NewStaticCredentials( aws_access_id , aws_access_secret , ""),},
-	)
+		//Credentials: credentials.NewStaticCredentials( aws_access_id , aws_access_secret , ""),
+	},)
 	if err != nil {
 		fmt.Println("Erro Create aws Session: ",err.Error())
 		os.Exit(1)
 	}
 
-    file, err := os.Open(*file_name)
-    if err != nil {
+	file, err := os.Open(*file_name)
+	if err != nil {
 		fmt.Println("Erro open file: ",err.Error())
-        os.Exit(1)
-    }
-    defer file.Close()
+		os.Exit(1)
+	}
+	defer file.Close()
 
 	fileInfo, _ := file.Stat()
-    var size int64 = fileInfo.Size()
-    buffer := make([]byte, size)
-    file.Read(buffer)
+	var size int64 = fileInfo.Size()
+	buffer := make([]byte, size)
+	file.Read(buffer)
 
 	hash := md5.New()
 	_, err = io.Copy(hash, file)
@@ -79,18 +80,17 @@ func main(){
 	}
 
 	var s3_tag = "md5=" + hex.EncodeToString(hash.Sum(nil))
-	
+
 	_, err = s3.New(sess).PutObject(&s3.PutObjectInput{
-        Bucket:               aws.String(*bucket_name),
-        Key:                  aws.String(*file_name),
-        ACL:                  aws.String("private"),
-        Body:                 bytes.NewReader(buffer),
-        ContentLength:        aws.Int64(size),
-        ContentDisposition:   aws.String("attachment"),
-		Tagging:			  aws.String(s3_tag),
-        ServerSideEncryption: aws.String("AES256"),
-    })
-	
+													Bucket:               aws.String(*bucket_name),
+													Key:                  aws.String(*file_name),
+													ACL:                  aws.String("private"),
+													Body:                 bytes.NewReader(buffer),
+													ContentLength:        aws.Int64(size),
+													ContentDisposition:   aws.String("attachment"),
+													Tagging:			  aws.String(s3_tag),
+													ServerSideEncryption: aws.String("AES256"),
+	})
 	if err != nil {
 		fmt.Println("Erro upload file: ",err.Error())
 		os.Exit(1)
