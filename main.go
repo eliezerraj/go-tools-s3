@@ -85,14 +85,14 @@ func main(){
 
 	var s3_tag = "md5=" + hex.EncodeToString(hash.Sum(nil))
 
-	_, err = s3.New(sess).PutObject(&s3.PutObjectInput{Bucket:               aws.String(*bucket_name),
-													Key:                  aws.String(*file_name),
-													ACL:                  aws.String("private"),
-													Body:                 bytes.NewReader(buffer),
-													ContentLength:        aws.Int64(size),
-													ContentDisposition:   aws.String("attachment"),
-													Tagging:			  aws.String(s3_tag),
-													ServerSideEncryption: aws.String("AES256"),})
+	_, err = s3.New(sess).PutObject(&s3.PutObjectInput{Bucket:	aws.String(*bucket_name),
+													Key:	aws.String(*file_name),
+													ACL:	aws.String("private"),
+													Body:	bytes.NewReader(buffer),
+													ContentLength:	aws.Int64(size),
+													ContentDisposition:	aws.String("attachment"),
+													Tagging:	aws.String(s3_tag),
+													ServerSideEncryption:	aws.String("AES256"),})
 	if err != nil {
 		fmt.Println("Erro upload file: ",err.Error())
 		os.Exit(1)
