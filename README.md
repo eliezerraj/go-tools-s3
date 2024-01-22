@@ -2,7 +2,8 @@
 
 Workload for general purposes
 
-It upload a file from localmachine to S3. 
+/upload   => Calc the sha256sum, set a tag and upload if to S3. 
+/download => Download the file, get the sha256sum from tag and calc the the sha256sun from the file 
 
 ## How to use
 
@@ -24,3 +25,12 @@ config.yaml
 ## How to use
 
         go run . --bucket_name 908671954593-eliezer-my-bucket-test --file_name file01.txt
+
+## Check
+
+    cat file01.txt | sha256sum
+    946040acf82ba0547e32b167f0efc206eae99234a350ebc94d9829b88cc8a787  -
+
+## Docto
+
+https://pkg.go.dev/github.com/aws/aws-sdk-go-v2/service/s3#Client.GetObjectTagging
